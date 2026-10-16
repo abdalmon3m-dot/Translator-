@@ -21,9 +21,18 @@ jobs:
           gradle-version: 8.9
 
       - name: Build debug APK
-        run: gradle assembleDebug --no-daemon
+        run: |
+          echo "Files in repo:"
+          find . -not -path './.git/*' -type f | head -50
+          SETTINGS=$(find . -name settings.gradle.kts -not -path './.git/*' | head -n1)
+          if [ -z "$SETTINGS" ]; then
+            echo "ERROR: settings.gradle.kts not found. Project files were not uploaded."
+            exit 1
+          fi
+          cd "$(dirname "$SETTINGS")"
+          gradle assembleDebug --no-daemon
 
       - uses: actions/upload-artifact@v4
         with:
           name: MeaningTranslate-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: "**/app-debug.apk"
