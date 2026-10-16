@@ -21,11 +21,19 @@ jobs:
           gradle-version: 8.9
 
       - name: Unzip project
+        run: unzip -q -o MeaningTranslate_github.zip -d project
+
+      - name: Patch code
+        working-directory: project/MeaningTranslate
         run: |
-          if ls *.zip >/dev/null 2>&1; then
-            unzip -q -o *.zip -d project
-          fi
+          sed -i "/text-recognition-arabic/d" app/build.gradle.kts
+          sed -i -e "/textrecognition.arabic/d" -e "/private val arabic = /d" -e "/val arText = /d" -e "/val arCount = /d" -e "/if (arCount >= 2)/d" app/src/main/java/com/example/meaningtranslate/Translate.kt
+          sed -i "s/^        return latinText/        return latinText.take(0)/" app/src/main/java/com/example/meaningtranslate/Translate.kt
+          sed -i "s/gemini-2.5-flash/gemini-3.8-flash/" app/src/main/java/com/example/meaningtranslate/Translate.kt
 
       - name: Build debug APK
-        run: |
-          SETTINGS=$(find . -
+        working-directory: project/MeaningTranslate
+        run: gradle assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
