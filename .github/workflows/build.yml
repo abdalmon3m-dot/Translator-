@@ -20,13 +20,18 @@ jobs:
         with:
           gradle-version: 8.9
 
+      - name: Unzip project
+        run: |
+          if ls *.zip >/dev/null 2>&1; then
+            unzip -q -o *.zip -d project
+          fi
+
       - name: Build debug APK
         run: |
-          echo "Files in repo:"
-          find . -not -path './.git/*' -type f | head -50
           SETTINGS=$(find . -name settings.gradle.kts -not -path './.git/*' | head -n1)
           if [ -z "$SETTINGS" ]; then
-            echo "ERROR: settings.gradle.kts not found. Project files were not uploaded."
+            echo "ERROR: settings.gradle.kts not found."
+            find . -not -path './.git/*' -type f | head -50
             exit 1
           fi
           cd "$(dirname "$SETTINGS")"
