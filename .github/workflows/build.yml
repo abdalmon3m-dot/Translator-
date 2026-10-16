@@ -31,10 +31,14 @@ jobs:
           SETTINGS=$(find . -name settings.gradle.kts -not -path './.git/*' | head -n1)
           if [ -z "$SETTINGS" ]; then
             echo "ERROR: settings.gradle.kts not found."
-            find . -not -path './.git/*' -type f | head -50
             exit 1
           fi
           cd "$(dirname "$SETTINGS")"
+          # ML Kit Arabic مش موجودة؛ نشيلها والعربي يتقرأ عن طريق Gemini
+          sed -i '/text-recognition-arabic/d' app/build.gradle.kts
+          F=app/src/main/java/com/example/meaningtranslate/Translate.kt
+          sed -i -e '/textrecognition.arabic/d' -e '/private val arabic = /d' -e '/val arText = /d' -e '/val arCount = /d' -e '/if (arCount >= 2)/d' $F
+          sed -i 's/^        return latinText$/        return ""/' $F
           gradle assembleDebug --no-daemon
 
       - uses: actions/upload-artifact@v4
